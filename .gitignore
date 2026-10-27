@@ -1,0 +1,30 @@
+# Server-specific settings and credentials
+.env
+.env.*
+!.env.example
+
+# TLS certificates and private keys
+certs/*
+!certs/.gitkeep
+
+# Persistent application data (SQLite and runtime JSON files)
+data/*
+!data/.gitkeep
+*.db
+*.sqlite
+*.sqlite3
+*.db-wal
+*.db-shm
+
+# Runtime state and logs
+.eva-live/
+*.log
+logs/
+
+# Local development artifacts
+.venv/
+venv/
+node_modules/
+__pycache__/
+*.py[cod]
+.DS_Store

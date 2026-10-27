@@ -1,0 +1,69 @@
+# ECR deployment profile: pull the prebuilt app image; do not build from source.
+services:
+  backend:
+    image: ${DOCK_BACKEND_IMAGE:?Set DOCK_BACKEND_IMAGE to an ECR image and tag}
+    container_name: ${DOCK_BACKEND_CONTAINER_NAME:-eva-dock}
+    restart: unless-stopped
+    network_mode: host
+    user: "${DOCK_UID:-10001}:${DOCK_GID:-10001}"
+
+    env_file:
+      - ../.env
+
+    environment:
+      DOCK_PORT: ${DOCK_PORT:-18080}
+      DATABASE_URL: sqlite:////data/eva_live.db
+      RUNTIME_DB_FILE: /data/eva_live.db
+      HISTORY_FILE: /data/eva_live.db
+      DOCK_STATE_FILE: /data/wall.json
+      CATALOG_FILE: /data/catalog.json
+      EVAS_FILE: /data/evas.json
+
+    volumes:
+      - type: bind
+        source: ${DOCK_DATA_DIR:-../data}
+        target: /data
+
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:${DOCK_PORT:-18080}/api/health', timeout=3)"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  caddy:
+    image: ${DOCK_CADDY_IMAGE:?Set DOCK_CADDY_IMAGE to an ECR image and tag}
+    container_name: ${DOCK_CADDY_CONTAINER_NAME:-eva-dock-caddy}
+    restart: unless-stopped
+    network_mode: host
+
+    env_file:
+      - ../.env
+
+    environment:
+      DOCK_SECURE_PORT: ${DOCK_SECURE_PORT:-17443}
+      DOCK_UPSTREAM_PORT: ${DOCK_PORT:-18080}
+
+    depends_on:
+      backend:
+        condition: service_healthy
+
+    volumes:
+      - type: bind
+        source: ${DOCK_TLS_CERT_FILE:-../certs/tls.crt}
+        target: /etc/caddy/certs/tls.crt
+        read_only: true
+      - type: bind
+        source: ${DOCK_TLS_KEY_FILE:-../certs/tls.key}
+        target: /etc/caddy/certs/tls.key
+        read_only: true
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:
