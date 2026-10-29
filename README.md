@@ -35,6 +35,8 @@ cp .env.example .env
 
 `.env`에서 `DOCK_TEST_HOST`와 ECR 저장소 주소를 실제 값으로 설정합니다. `DOCK_VERSION`은 백엔드 이미지 태그에 사용되며 Caddy 이미지는 `latest`를 사용합니다. 데이터와 인증서 경로가 상대 경로이면 저장소 루트를 기준으로 해석됩니다. 인증서와 개인키를 지정한 위치에 넣으세요.
 
+`DASHBOARD_ENABLED`, `LIVE_ENABLED`, `STREAMING_ENABLED`는 각 탭을 독립적으로 표시하거나 숨깁니다.
+
 DB fallback으로 EVA 피드백을 조회하는 경우에만 `EVA_MYSQL_USER`, `EVA_MYSQL_PASSWORD` 등 EVA MySQL 설정을 추가합니다. EVA별 M2M 및 그룹 설정은 EVA Dock 관리 화면에서 구성합니다.
 
 ## 실행 및 관리
